@@ -11,16 +11,16 @@ import (
 
 // Nord theme colors
 const (
-	Nord0  = "\033[38;2;46;52;64m"    // Polar Night (dark)
-	Nord1  = "\033[38;2;59;66;82m"    // Polar Night
-	Nord4  = "\033[38;2;216;222;233m" // Snow Storm (light)
-	Nord7  = "\033[38;2;143;188;187m" // Frost
-	Nord8  = "\033[38;2;136;192;208m" // Frost
-	Nord9  = "\033[38;2;129;161;193m" // Frost
-	Nord10 = "\033[38;2;94;129;172m"  // Frost
-	Nord11 = "\033[38;2;191;97;106m"  // Aurora (red)
-	Nord13 = "\033[38;2;235;203;139m" // Aurora (yellow)
-	Nord14 = "\033[38;2;163;190;140m" // Aurora (green)
+	Nord0  = "\033[38;2;46;52;64m"    
+	Nord1  = "\033[38;2;59;66;82m"    
+	Nord4  = "\033[38;2;216;222;233m" 
+	Nord7  = "\033[38;2;143;188;187m" 
+	Nord8  = "\033[38;2;136;192;208m" 
+	Nord9  = "\033[38;2;129;161;193m" 
+	Nord10 = "\033[38;2;94;129;172m"  
+	Nord11 = "\033[38;2;191;97;106m"  
+	Nord13 = "\033[38;2;235;203;139m" 
+	Nord14 = "\033[38;2;163;190;140m" 
 	Reset  = "\033[0m"
 )
 
@@ -90,13 +90,11 @@ func detectLanguage(filename string) string {
 func tokenize(content string, lang Language) []Token {
 	var tokens []Token
 	
-	// Convert content to string slice
 	words := strings.Fields(content)
 	
 	for _, word := range words {
 		token := Token{Type: "text", Value: word}
 		
-		// Check keywords
 		for _, keyword := range lang.Keywords {
 			if word == keyword {
 				token.Type = "keyword"
@@ -104,7 +102,6 @@ func tokenize(content string, lang Language) []Token {
 			}
 		}
 		
-		// Check types
 		for _, typ := range lang.Types {
 			if word == typ {
 				token.Type = "type"
@@ -112,7 +109,6 @@ func tokenize(content string, lang Language) []Token {
 			}
 		}
 		
-		// Check constants
 		for _, constant := range lang.Constants {
 			if word == constant {
 				token.Type = "constant"
@@ -120,7 +116,6 @@ func tokenize(content string, lang Language) []Token {
 			}
 		}
 		
-		// Check operators
 		for _, operator := range lang.Operators {
 			if word == operator {
 				token.Type = "operator"
@@ -128,12 +123,10 @@ func tokenize(content string, lang Language) []Token {
 			}
 		}
 		
-		// Check for strings
 		if strings.HasPrefix(word, "\"") || strings.HasPrefix(word, "'") {
 			token.Type = "string"
 		}
 		
-		// Check for numbers
 		if regexp.MustCompile(`^[0-9]+$`).MatchString(word) {
 			token.Type = "number"
 		}
@@ -196,7 +189,7 @@ func main() {
 	if len(args) < 2 {
 		scanner := bufio.NewScanner(os.Stdin)
 		for scanner.Scan() {
-			tokens := tokenize(scanner.Text(), languages["go"]) // Default to Go for stdin
+			tokens := tokenize(scanner.Text(), languages["go"]) 
 			for _, token := range tokens {
 				fmt.Printf("%s ", highlight(token))
 			}
