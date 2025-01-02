@@ -91,8 +91,8 @@ func tokenize(content string, lang Language) []Token {
 	r := regexp.MustCompile(`[\s\(\)\[\]{},;.]`)
 	parts := r.Split(content, -1)
 	
-	currentPackage := ""
-	
+  currentPackage := ""
+
 	for _, part := range parts {
 		if part == "" {
 			continue
