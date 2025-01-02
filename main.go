@@ -38,13 +38,11 @@ var nordTheme = styles.Register(chroma.MustNewStyle("nord", chroma.StyleEntries{
 }))
 
 func highlightCode(content string, filename string) string {
-	// Determine lexer based on filename extension
 	lexer := lexers.Match(filename)
 	if lexer == nil {
 		lexer = lexers.Fallback
 	}
 
-	// Create formatter for terminal output
 	formatter := formatters.Get("terminal256")
 	if formatter == nil {
 		formatter = formatters.Fallback
@@ -90,7 +88,6 @@ func printFile(filename string) {
 
 func main() {
 	if len(os.Args) < 2 {
-		// No files provided; read from standard input
 		scanner := bufio.NewScanner(os.Stdin)
 		var content strings.Builder
 		for scanner.Scan() {
@@ -101,11 +98,9 @@ func main() {
 			return
 		}
 		
-		// Highlight content from stdin as Go code by default
 		highlighted := highlightCode(content.String(), "input.go")
 		fmt.Print(highlighted)
 	} else {
-		// Loop through all provided files
 		for _, filename := range os.Args[1:] {
 			printFile(filename)
 		}
