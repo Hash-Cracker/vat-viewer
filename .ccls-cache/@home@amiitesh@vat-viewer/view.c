@@ -20,11 +20,13 @@ void print_file(const char *filename) {
 
 int main(int argc, char *argv[]) {
     if (argc < 2) {
+        // No files provided; read from standard input
         char buffer[1024];
         while (fgets(buffer, sizeof(buffer), stdin)) {
             fputs(buffer, stdout);
         }
     } else {
+        // Loop through all provided files
         for (int i = 1; i < argc; i++) {
             print_file(argv[i]);
         }
