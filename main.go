@@ -53,6 +53,7 @@ var nordTheme = styles.Register(chroma.MustNewStyle("nord", chroma.StyleEntries{
 	chroma.NameEntity:          "#8FBCBB",
 	chroma.NameException:       "#BF616A",
 	chroma.NameFunction:        "#88C0D0",
+	chroma.NameFunctionMagic:   "#88C0D0",
 	chroma.NameLabel:           "#8FBCBB",
 	chroma.NameNamespace:       "#8FBCBB",
 	chroma.NameOther:          "#D8DEE9",
@@ -100,17 +101,24 @@ var nordTheme = styles.Register(chroma.MustNewStyle("nord", chroma.StyleEntries{
 }))
 
 func highlightCode(content string, filename string) string {
+	// Get the lexer based on filename
 	lexer := lexers.Match(filename)
 	if lexer == nil {
 		lexer = lexers.Fallback
 	}
+
+	// Create a custom analyzer for improved token handling
+	analyzer := &tokenAnalyzer{
+		importedPackages: make(map[string]bool),
+		packageFuncs:    make(map[string]bool),
+	}
+	analyzer.scanImports(content)
 
 	formatter := formatters.Get("terminal256")
 	if formatter == nil {
 		formatter = formatters.Fallback
 	}
 
-	// Use Nord theme
 	style := styles.Get("nord")
 	if style == nil {
 		style = styles.Fallback
@@ -121,13 +129,86 @@ func highlightCode(content string, filename string) string {
 		return content
 	}
 
+	// Enhance the token stream with package function recognition
+	enhancedIterator := analyzer.enhanceTokens(iterator)
+
 	var buf strings.Builder
-	err = formatter.Format(&buf, style, iterator)
+	err = formatter.Format(&buf, style, enhancedIterator)
 	if err != nil {
 		return content
 	}
 
 	return buf.String()
+}
+
+// tokenAnalyzer helps analyze and enhance token recognition
+type tokenAnalyzer struct {
+	importedPackages map[string]bool
+	packageFuncs     map[string]bool
+	currentPackage   string
+}
+
+// scanImports scans the content for import statements and builds a map of imported packages
+func (a *tokenAnalyzer) scanImports(content string) {
+	scanner := bufio.NewScanner(strings.NewReader(content))
+	inImportBlock := false
+
+	for scanner.Scan() {
+		line := strings.TrimSpace(scanner.Text())
+
+		if strings.HasPrefix(line, "package ") {
+			a.currentPackage = strings.TrimPrefix(line, "package ")
+			continue
+		}
+
+		if line == "import (" {
+			inImportBlock = true
+			continue
+		}
+
+		if line == ")" {
+			inImportBlock = false
+			continue
+		}
+
+		if inImportBlock || strings.HasPrefix(line, "import ") {
+			pkgPath := strings.Trim(strings.TrimPrefix(line, "import "), "\"` ")
+			if strings.Contains(pkgPath, " ") {
+				parts := strings.Fields(pkgPath)
+				pkgPath = strings.Trim(parts[len(parts)-1], "\"` ")
+			}
+			a.importedPackages[pkgPath] = true
+		}
+	}
+}
+
+// enhanceTokens processes the token stream to improve function recognition
+func (a *tokenAnalyzer) enhanceTokens(iterator chroma.Iterator) chroma.Iterator {
+	var tokens []chroma.Token
+	var lastDot bool
+	var lastIdent string
+
+	for _, token := range iterator.Tokens() {
+		// Track package-qualified function calls
+		if token.Type == chroma.NameOther {
+			if lastDot {
+				// This is likely a function call from an imported package
+				if a.importedPackages[lastIdent] {
+					token.Type = chroma.NameFunctionMagic
+				}
+			}
+			lastIdent = token.Value
+			lastDot = false
+		} else if token.Value == "." {
+			lastDot = true
+		} else {
+			lastDot = false
+		}
+
+		tokens = append(tokens, token)
+	}
+
+	return chroma.Literator(tokens...)
 }
 
 func printFile(filename string) {
