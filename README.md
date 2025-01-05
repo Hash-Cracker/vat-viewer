@@ -1,6 +1,6 @@
 # VAT Viewer
 
-This is a file viewer which is pretty much a clone of [bat](https://github.com/sharkdp/bat) viewer but with only Nord highlighting. There are still some to of the highlighting bugs and issues to be fixed.
+This is a file viewer which is pretty much `cat` viewer but with only Nord highlighting. There are still some to of the highlighting bugs and issues to be fixed.
 
 ## Installation
 
