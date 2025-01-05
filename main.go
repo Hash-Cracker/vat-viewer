@@ -137,7 +137,7 @@ func highlightCode(content string, filename string) string {
 		return content
 	}
 
-	// Add line numbers to the highlighted content
+  // Adding line numbering
 	lines := strings.Split(buf.String(), "\n")
 	var numberedContent strings.Builder
 	for i, line := range lines {
