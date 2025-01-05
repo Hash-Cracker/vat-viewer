@@ -101,16 +101,15 @@ var nordTheme = styles.Register(chroma.MustNewStyle("nord", chroma.StyleEntries{
 }))
 
 func highlightCode(content string, filename string) string {
-	// Get the lexer based on filename
 	lexer := lexers.Match(filename)
 	if lexer == nil {
 		lexer = lexers.Fallback
 	}
 
-	// Create a custom analyzer for improved token handling
+	// Create an analyzer and scan imports
 	analyzer := &tokenAnalyzer{
 		importedPackages: make(map[string]bool),
-		packageFuncs:    make(map[string]bool),
+		packageFuncs:     make(map[string]bool),
 	}
 	analyzer.scanImports(content)
 
@@ -138,7 +137,15 @@ func highlightCode(content string, filename string) string {
 		return content
 	}
 
-	return buf.String()
+	// Add line numbers to the highlighted content
+	lines := strings.Split(buf.String(), "\n")
+	var numberedContent strings.Builder
+	for i, line := range lines {
+		lineNum := i + 1
+		numberedContent.WriteString(fmt.Sprintf("%5d | %s\n", lineNum, line))
+	}
+
+	return numberedContent.String()
 }
 
 // tokenAnalyzer helps analyze and enhance token recognition
